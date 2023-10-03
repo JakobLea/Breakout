@@ -7,7 +7,13 @@ require 'src/constants'
 
 require 'src/Paddle'
 
+require 'src/Ball'
+
+require 'src/Brick'
+
 require 'src/StateMachine'
+
+require 'src/LevelMaker'
 
 require 'src/Util'
 
