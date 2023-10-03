@@ -2,7 +2,7 @@ require 'src/Dependencies'
 
 
 function love.load()
-
+    
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
     math.randomseed(os.time())
@@ -16,7 +16,6 @@ function love.load()
     }
     love.graphics.setFont(gFonts['small'])
 
-   
     gTextures = {
         ['background'] = love.graphics.newImage('graphics/background.png'),
         ['main'] = love.graphics.newImage('graphics/breakout.png'),
@@ -25,20 +24,23 @@ function love.load()
         ['particle'] = love.graphics.newImage('graphics/particle.png')
     }
 
+
     gFrames = {
-        ['paddles'] = GenerateQuadsPaddles (gTextures['main']),
-        ['balls'] = GenerateQuadsBalls (gTextures['main']),
-        ['bricks'] = GenerateQuadsBricks(gTextures['main'])
+        ['arrows'] = GenerateQuads(gTextures['arrows'], 24, 24),
+        ['paddles'] = GenerateQuadsPaddles(gTextures['main']),
+        ['balls'] = GenerateQuadsBalls(gTextures['main']),
+        ['bricks'] = GenerateQuadsBricks(gTextures['main']),
+        ['hearts'] = GenerateQuads(gTextures['hearts'], 10, 9)
     }
     
-  
+   
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {
         vsync = true,
         fullscreen = false,
         resizable = true
     })
 
-   
+    
     gSounds = {
         ['paddle-hit'] = love.audio.newSource('sounds/paddle_hit.wav', 'static'),
         ['score'] = love.audio.newSource('sounds/score.wav', 'static'),
@@ -57,16 +59,27 @@ function love.load()
         ['music'] = love.audio.newSource('sounds/music.wav', 'static')
     }
 
+ 
     gStateMachine = StateMachine {
         ['start'] = function() return StartState() end,
-        ['play'] = function() return PlayState() end
+        ['play'] = function() return PlayState() end,
+        ['serve'] = function() return ServeState() end,
+        ['game-over'] = function() return GameOverState() end,
+        ['victory'] = function() return VictoryState() end,
+        ['high-scores'] = function() return HighScoreState() end,
+        ['enter-high-score'] = function() return EnterHighScoreState() end,
+        ['paddle-select'] = function() return PaddleSelectState() end
     }
-    gStateMachine:change('start')
+    gStateMachine:change('start', {
+        highScores = loadHighScores()
+    })
 
- 
+    gSounds['music']:play()
+    gSounds['music']:setLooping(true)
+
+  
     love.keyboard.keysPressed = {}
 end
-
 
 function love.resize(w, h)
     push:resize(w, h)
@@ -97,6 +110,7 @@ end
 function love.draw()
     push:apply('start')
 
+    
     local backgroundWidth = gTextures['background']:getWidth()
     local backgroundHeight = gTextures['background']:getHeight()
 
@@ -112,8 +126,72 @@ function love.draw()
     push:apply('end')
 end
 
+
+function loadHighScores()
+    love.filesystem.setIdentity('breakout')
+
+    if not love.filesystem.getInfo('breakout.lst') then
+        local scores = ''
+        for i = 10, 1, -1 do
+            scores = scores .. 'CTO\n'
+            scores = scores .. tostring(i * 1000) .. '\n'
+        end
+
+        love.filesystem.write('breakout.lst', scores)
+    end
+
+    local name = true
+    local currentName = nil
+    local counter = 1
+
+    local scores = {}
+
+    for i = 1, 10 do
+        scores[i] = {
+            name = nil,
+            score = nil
+        }
+    end
+
+    for line in love.filesystem.lines('breakout.lst') do
+        if name then
+            scores[counter].name = string.sub(line, 1, 3)
+        else
+            scores[counter].score = tonumber(line)
+            counter = counter + 1
+        end
+
+        name = not name
+    end
+
+    return scores
+end
+
+
+function renderHealth(health)
+    local healthX = VIRTUAL_WIDTH - 100
+    
+    for i = 1, health do
+        love.graphics.draw(gTextures['hearts'], gFrames['hearts'][1], healthX, 4)
+        healthX = healthX + 11
+    end
+
+    for i = 1, 3 - health do
+        love.graphics.draw(gTextures['hearts'], gFrames['hearts'][2], healthX, 4)
+        healthX = healthX + 11
+    end
+end
+
+
 function displayFPS()
     love.graphics.setFont(gFonts['small'])
     love.graphics.setColor(0, 1, 0, 1)
     love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 5, 5)
+end
+
+
+function renderScore(score)
+    love.graphics.setFont(gFonts['small'])
+    love.graphics.print('Score:', VIRTUAL_WIDTH - 60, 5)
+    love.graphics.printf(tostring(score), VIRTUAL_WIDTH - 50, 5, 40, 'right')
 end
