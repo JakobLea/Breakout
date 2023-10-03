@@ -1,17 +1,3 @@
---[[
-    GD50
-    Breakout Remake
-
-    -- GameOverState Class --
-
-    Author: Colton Ogden
-    cogden@cs50.harvard.edu
-
-    The state in which we've lost all of our health and get our score displayed to us. Should
-    transition to the EnterHighScore state if we exceeded one of our stored high scores, else back
-    to the StartState.
-]]
-
 GameOverState = Class{__includes = BaseState}
 
 function GameOverState:enter(params)
@@ -21,10 +7,8 @@ end
 
 function GameOverState:update(dt)
     if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
-        -- see if score is higher than any in the high scores table
         local highScore = false
         
-        -- keep track of what high score ours overwrites, if any
         local scoreIndex = 11
 
         for i = 10, 1, -1 do
