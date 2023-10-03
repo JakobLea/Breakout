@@ -10,7 +10,7 @@ function PlayState:enter(params)
     self.ball = params.ball
     self.level = params.level
 
-    self.recoverPoints = 5000
+    self.recoverPoints = 50000
 
     self.ball.dx = math.random(-200, 200)
     self.ball.dy = math.random(-50, -60)
