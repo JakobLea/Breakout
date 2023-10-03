@@ -74,6 +74,7 @@ function love.load()
         highScores = loadHighScores()
     })
 
+    gSounds['music']:setVolume(0.6)
     gSounds['music']:play()
     gSounds['music']:setLooping(true)
 
