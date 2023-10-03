@@ -1,25 +1,11 @@
---[[
-    GD50
-    Breakout Remake
-
-    -- EnterHighScoreState Class --
-
-    Author: Colton Ogden
-    cogden@cs50.harvard.edu
-
-    Screen that allows us to input a new high score in the form of three characters, arcade-style.
-]]
-
 EnterHighScoreState = Class{__includes = BaseState}
 
--- individual chars of our string
 local chars = {
     [1] = 65,
     [2] = 65,
     [3] = 65
 }
 
--- char we're currently changing
 local highlightedChar = 1
 
 function EnterHighScoreState:enter(params)
@@ -30,10 +16,8 @@ end
 
 function EnterHighScoreState:update(dt)
     if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
-        -- update scores table
         local name = string.char(chars[1]) .. string.char(chars[2]) .. string.char(chars[3])
 
-        -- go backwards through high scores table till this score, shifting scores
         for i = 10, self.scoreIndex, -1 do
             self.highScores[i + 1] = {
                 name = self.highScores[i].name,
@@ -44,7 +28,6 @@ function EnterHighScoreState:update(dt)
         self.highScores[self.scoreIndex].name = name
         self.highScores[self.scoreIndex].score = self.score
 
-        -- write scores to file
         local scoresStr = ''
 
         for i = 1, 10 do
@@ -59,7 +42,6 @@ function EnterHighScoreState:update(dt)
         })
     end
 
-    -- scroll through character slots
     if love.keyboard.wasPressed('left') and highlightedChar > 1 then
         highlightedChar = highlightedChar - 1
         gSounds['select']:play()
@@ -68,7 +50,6 @@ function EnterHighScoreState:update(dt)
         gSounds['select']:play()
     end
 
-    -- scroll through characters
     if love.keyboard.wasPressed('up') then
         chars[highlightedChar] = chars[highlightedChar] + 1
         if chars[highlightedChar] > 90 then
@@ -89,9 +70,7 @@ function EnterHighScoreState:render()
 
     love.graphics.setFont(gFonts['large'])
     
-    --
-    -- render all three characters of the name
-    --
+  
     if highlightedChar == 1 then
         love.graphics.setColor(103/255, 1, 1, 1)
     end
